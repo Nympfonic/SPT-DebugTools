@@ -35,9 +35,9 @@ namespace Arys.DebugTools
             // If TeleportAllBots keybind is pressed and there are valid bots, teleport to where player is looking
             if (Plugin.TeleportAllBotsKeybind.Value.IsDown() && _botTeleportList.Any())
             {
-                foreach (var player in _botTeleportList)
+                foreach (var bot in _botTeleportList)
                 {
-                    player.Transform.SetPositionAndRotation(hitInfo.point + Vector3.up, Quaternion.Euler(0f, 0f, 0f));
+                    bot.Transform.SetPositionAndRotation(hitInfo.point + Vector3.up, Quaternion.Euler(0f, 0f, 0f));
                 }
             }
         }
@@ -55,6 +55,15 @@ namespace Arys.DebugTools
         private void RemoveBotFromTeleportList(IPlayer bot)
         {
             _botTeleportList.Remove((Player)bot);
+        }
+
+        private void OnDestroy()
+        {
+            _botSpawner.OnBotCreated -= AddBotToTeleportList;
+            foreach (var bot in _botTeleportList)
+            {
+                bot.OnIPlayerDeadOrUnspawn -= RemoveBotFromTeleportList;
+            }
         }
     }
 }
