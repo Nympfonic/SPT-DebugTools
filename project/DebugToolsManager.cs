@@ -1,69 +1,49 @@
-﻿using EFT;
-using Comfort.Common;
-using UnityEngine;
+﻿using Arys.SPTDebugTools.Components;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 
-namespace Arys.DebugTools
+namespace Arys.SPTDebugTools
 {
-    public class DebugToolsManager : MonoBehaviour
-    {
-        private readonly GameWorld _gameWorld;
-        private readonly Player _player;
-        private readonly BotSpawner _botSpawner;
-        private readonly List<Player> _botTeleportList = [];
+	[DisallowMultipleComponent]
+	public class DebugToolsManager : MonoBehaviour
+	{
+		private readonly List<IComponent> _components = [];
 
-        public DebugToolsManager()
-        {
-            _gameWorld = Singleton<GameWorld>.Instance;
-            _botSpawner = Singleton<IBotGame>.Instance.BotsController.BotSpawner;
-            _player = _gameWorld.MainPlayer;
+		internal void AddComponent<T>()
+			where T : IComponent, new()
+		{
+			_components.Add(new T());
+		}
 
-            _botSpawner.OnBotCreated += AddBotToTeleportList;
-        }
+		internal void RemoveComponent<T>(T component)
+			where T : IComponent
+		{
+			_components.Remove(component);
+		}
 
-        private void Update()
-        {
-            TeleportAllBotsToTarget();
-        }
+		private void Start()
+		{
+			AddComponent<TeleportBotsComponent>();
+		}
 
-        private void TeleportAllBotsToTarget()
-        {
-            Transform cameraTransform = _player.CameraPosition;
-            Physics.Raycast(cameraTransform.position + cameraTransform.forward, cameraTransform.forward, out RaycastHit hitInfo);
+		private void Update()
+		{
+			int componentCount = _components.Count;
+			for (int i = componentCount - 1; i >= 0; i--)
+			{
+				if (_components[i] == null) continue;
+				_components[i].ManualUpdate();
+			}
+		}
 
-            // If TeleportAllBots keybind is pressed and there are valid bots, teleport to where player is looking
-            if (Plugin.TeleportAllBotsKeybind.Value.IsDown() && _botTeleportList.Any())
-            {
-                foreach (var bot in _botTeleportList)
-                {
-                    bot.Transform.SetPositionAndRotation(hitInfo.point + Vector3.up, Quaternion.Euler(0f, 0f, 0f));
-                }
-            }
-        }
-
-        private void AddBotToTeleportList(BotOwner bot)
-        {
-            var botPlayer = bot.GetPlayer;
-            if (!_botTeleportList.Contains(botPlayer) && bot.Profile.Info.Settings.Role != WildSpawnType.shooterBTR)
-            {
-                botPlayer.OnIPlayerDeadOrUnspawn += RemoveBotFromTeleportList;
-                _botTeleportList.Add(botPlayer);
-            }
-        }
-
-        private void RemoveBotFromTeleportList(IPlayer bot)
-        {
-            _botTeleportList.Remove((Player)bot);
-        }
-
-        private void OnDestroy()
-        {
-            _botSpawner.OnBotCreated -= AddBotToTeleportList;
-            foreach (var bot in _botTeleportList)
-            {
-                bot.OnIPlayerDeadOrUnspawn -= RemoveBotFromTeleportList;
-            }
-        }
-    }
+		private void OnDestroy()
+		{
+			int componentCount = _components.Count;
+			for (int i = componentCount - 1; i >= 0; i--)
+			{
+				if (_components[i] == null) continue;
+				_components[i].Destroy();
+			}
+		}
+	}
 }

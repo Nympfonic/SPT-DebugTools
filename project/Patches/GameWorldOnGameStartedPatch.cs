@@ -1,11 +1,11 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
 using EFT;
 using HarmonyLib;
 using System.Reflection;
 
-namespace Arys.DebugTools
+namespace Arys.SPTDebugTools.Patches
 {
-    public class GameWorldPatch : ModulePatch
+    public class GameWorldOnGameStartedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {

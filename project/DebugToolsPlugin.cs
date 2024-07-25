@@ -1,16 +1,16 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 
-namespace Arys.DebugTools
+namespace Arys.SPTDebugTools
 {
-    [BepInPlugin("com.Arys.DebugTools", "Arys.DebugTools", "1.0.0")]
-    public class Plugin : BaseUnityPlugin
+    [BepInPlugin("com.Arys.SPTDebugTools", "SPT-DebugTools", "1.0.0")]
+    public class DebugToolsPlugin : BaseUnityPlugin
     {
         internal static ConfigEntry<KeyboardShortcut> TeleportAllBotsKeybind;
 
         private void Awake()
         {
-            new GameWorldPatch().Enable();
+            new GameWorldOnGameStartedPatch().Enable();
 
             TeleportAllBotsKeybind = Config.Bind("", "Teleport all bots to target location", KeyboardShortcut.Empty, "");
         }
