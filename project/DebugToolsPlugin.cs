@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using Arys.SPTDebugTools.Patches;
+using BepInEx;
 using BepInEx.Configuration;
 
 namespace Arys.SPTDebugTools
